@@ -39,4 +39,4 @@ No script Python de exemplo, o `sessionId` enviado é uma string fixa
 Antes da entrega final, criem um endpoint `POST /sessoes` que retorna um UUID
 real ao iniciar o app, e façam o script Python consumir esse UUID em vez do
 valor fixo — isso fecha o ciclo: login → início de sessão → captura de vídeo →
-alertas → pausas.
+alertas → pausas. 
