@@ -1,0 +1,10 @@
+{
+ "name": "pausa-estudos", "private": true, "workspaces": ["backend", "frontend"], "engines": {"node": ">=22"},
+ "scripts": {
+  "dev": "concurrently -n api,web -c cyan,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+  "assets": "node scripts/copy-assets.mjs",
+  "build": "npm run assets && npm run build -w frontend && npm run build -w backend",
+  "start": "npm run start -w backend", "migrate": "npm run migrate -w backend",
+  "test": "npm run test -w backend && npm run test -w frontend", "check": "npm run build && npm test"
+ }, "devDependencies": {"concurrently": "^9.2.1"}
+}

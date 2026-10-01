@@ -5,6 +5,7 @@
 projeto/
 ├── visao-computacional/   # Script Python (OpenCV + MediaPipe)
 ├── backend/               # API Node.js + TypeScript
+├── frontend/              # Interface Web React + Vite
 └── database/              # Schema PostgreSQL
 ```
 
@@ -22,7 +23,14 @@ cp .env.example .env    # ajuste usuário/senha do Postgres
 npm run dev              # inicia em http://localhost:3000
 ```
 
-## 3. Visão computacional (Python)
+## 3. Frontend (React + Vite)
+```bash
+cd frontend
+npm install
+npm run dev              # inicia em http://localhost:5173
+```
+
+## 4. Visão computacional (Python)
 ```bash
 cd visao-computacional
 python -m venv venv
@@ -40,3 +48,13 @@ Antes da entrega final, criem um endpoint `POST /sessoes` que retorna um UUID
 real ao iniciar o app, e façam o script Python consumir esse UUID em vez do
 valor fixo — isso fecha o ciclo: login → início de sessão → captura de vídeo →
 alertas → pausas.
+
+## Funcionalidades do Frontend
+
+O frontend inclui:
+- **Sistema de Autenticação**: Login e registro de usuários
+- **Dashboard Interativo**: Estatísticas em tempo real de sessões, tempo de estudo, alertas e pausas
+- **Gerenciamento de Sessões**: Visualização e controle das sessões de estudo
+- **Histórico de Alertas**: Registro detalhado das detecções de fadiga e pausas realizadas
+- **Interface Responsiva**: Design moderno e adaptável para diferentes dispositivos
+- **Integração com API**: Comunicação completa com o backend Node.js 
