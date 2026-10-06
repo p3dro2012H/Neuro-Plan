@@ -77,5 +77,12 @@ desktop.ini
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+frontend/public/mediapipe/
+frontend/public/models/
+.build/
+test-results/
+.local-db/
+apresentacao/*.mp4
+apresentacao/*.webm
 *.swp
 *~

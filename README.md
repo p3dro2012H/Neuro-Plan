@@ -1,5 +1,7 @@
 # Sistema de Monitoramento de Estudos — Detecção de Fadiga
 
+> **Versão atual no navegador:** execute `npm ci` e `npm run demo` na raiz e abra http://localhost:3000. Veja [instalação](docs/INSTALACAO.md), [publicação](docs/PUBLICACAO.md) e [roteiro](docs/ROTEIRO.md). As instruções iniciais abaixo foram preservadas como referência da primeira versão.
+
 ## Estrutura
 ```
 projeto/
@@ -58,3 +60,18 @@ O frontend inclui:
 - **Histórico de Alertas**: Registro detalhado das detecções de fadiga e pausas realizadas
 - **Interface Responsiva**: Design moderno e adaptável para diferentes dispositivos
 - **Integração com API**: Comunicação completa com o backend Node.js 
+
+---
+
+## Protótipo NeuroPlan: versão no navegador
+
+As instruções anteriores descrevem a estrutura inicial. A versão atual cria o frontend React e integra câmera, autenticação, sessões, pausas e histórico. O Python permanece como referência histórica; não é usado pelo fluxo web autenticado.
+
+Para experimentar sem instalar PostgreSQL: na raiz, execute `npm ci` e `npm run demo`; abra **http://localhost:3000**. Para desenvolvimento com PostgreSQL/Neon, siga [a instalação](docs/INSTALACAO.md).
+
+- [Publicar no Render e Neon](docs/PUBLICACAO.md)
+- [API e regras experimentais](docs/API.md)
+- [Avaliação e aceitação](docs/VALIDACAO.md)
+- [Roteiro e gravação de reserva](docs/ROTEIRO.md)
+
+`npm run check` compila e testa. Imagens da câmera ficam no navegador. O protótipo apoia pausas; não diagnostica burnout nem comprova sua prevenção.

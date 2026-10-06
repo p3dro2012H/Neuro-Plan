@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: neuro-plan
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: AUTO_MIGRATE
+        value: "true"
+      - key: APP_ORIGIN
+        sync: false
+      - key: DATABASE_URL
+        sync: false

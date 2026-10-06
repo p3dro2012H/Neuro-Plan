@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "migrate": "tsx src/migrate.ts",
+    "demo": "tsx src/demo.ts",
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
