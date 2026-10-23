@@ -8,6 +8,10 @@ export default defineConfig({
       "/sessoes": "http://127.0.0.1:3000",
       "/alertas": "http://127.0.0.1:3000",
       "/health": "http://127.0.0.1:3000",
+      "/planejamento": "http://127.0.0.1:3000",
+      "/planejamentos": "http://127.0.0.1:3000",
+      "/tarefas": "http://127.0.0.1:3000",
+      "/assistente": "http://127.0.0.1:3000",
     },
   },
 });

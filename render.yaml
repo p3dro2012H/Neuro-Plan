@@ -17,3 +17,7 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+      # GROQ_API_KEY é configurada uma única vez, privadamente no painel.
+      # Sem chave, o planejamento manual continua disponível.

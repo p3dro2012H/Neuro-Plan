@@ -19,6 +19,8 @@ Repositório: https://github.com/p3dro2012H/Neuro-Plan
 
 Express entrega interface e API na mesma origem HTTPS; não precisa de outro serviço para React. Credenciais do banco nunca vão para o navegador.
 
+A migração `003_planejamento.sql` cria tarefas, preferências, agenda e histórico de propostas. Para habilitar o assistente para todas as contas, configure somente no servidor `GROQ_API_KEY` e `GROQ_MODEL=openai/gpt-oss-20b` conforme [o guia](PLANEJAMENTO.md). A chave de `backend/.env` serve para execução local; inclua-a também nas variáveis privadas do Render para a publicação. Mantenha Groq Free, sem método de pagamento ou upgrade. Sem chave, o organizador manual continua disponível. Verifique duas contas sem convites e acesso sem login recebendo 401. A troca de fornecedor preserva o schema e os registros existentes.
+
 ## Apresentação e limites gratuitos
 
 Render Free suspende serviços ociosos e pode demorar aproximadamente um minuto para reiniciar. Abra antes da demonstração. Se houver aviso de falha, aguarde e clique em Reconectar; dados confirmados continuam no Neon. Não configure tráfego artificial para impedir suspensão.

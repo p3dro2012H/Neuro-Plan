@@ -4,6 +4,9 @@ import { Camera } from "./Camera";
 import { Notifications } from "./Notifications";
 import { NotificationPermissionPrompt } from "./NotificationPermissionPrompt";
 import { FinishModal } from "./FinishModal";
+import { Planning } from "./Planning";
+import { Assistant } from "./Assistant";
+import { ThemeToggle } from "./ThemeToggle";
 import type { User, StudySession, HistoryItem, Signal } from "./types";
 const duration = (seconds: number) =>
   `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
@@ -53,7 +56,9 @@ function AppContent() {
     [offline, setOffline] = useState(false),
     [error, setError] = useState("");
   const [authMode, setAuthMode] = useState<"login" | "cadastro">("login"),
-    [page, setPage] = useState<"estudo" | "historico">("estudo");
+    [page, setPage] = useState<
+      "estudo" | "historico" | "planejamento" | "assistente"
+    >("estudo");
   const [session, setSession] = useState<StudySession | null>(null),
     [detail, setDetail] = useState<StudySession | null>(null),
     [history, setHistory] = useState<HistoryItem[]>([]),
@@ -281,6 +286,9 @@ function AppContent() {
   if (!user)
     return (
       <main className="auth-layout">
+        <div className="auth-theme-control">
+          <ThemeToggle />
+        </div>
         <section className="auth-story">
           <a className="brand" href="/">
             ◎ NeuroPlan
@@ -294,8 +302,8 @@ function AppContent() {
             <em>Recomece.</em>
           </h1>
           <p>
-            Organize uma sessão, acompanhe sinais de possível fadiga e escolha
-            quando descansar.
+            Organize suas tarefas e sua semana, acompanhe sinais de possível
+            fadiga e escolha quando descansar.
           </p>
           <span className="privacy-note">
             Sua câmera fica no navegador.
@@ -403,7 +411,8 @@ function AppContent() {
         </section>
       </main>
     );
-  const shown = page === "historico" ? detail : session;
+  const shown =
+    page === "historico" ? detail : page === "estudo" ? session : null;
   // O relógio é extrapolado apenas enquanto a API está disponível; o resumo definitivo sempre vem do servidor.
   const elapsed =
     shown === session && !shown?.finalizada_em && !offline
@@ -427,11 +436,24 @@ function AppContent() {
       : 0;
   return (
     <div className="app-shell">
+      {page === "estudo" && <NotificationPermissionPrompt />}
       <header className="topbar">
         <a className="brand" href="/">
           ◎ NeuroPlan
         </a>
         <nav aria-label="Principal">
+          <button
+            className={page === "planejamento" ? "selected" : ""}
+            onClick={() => setPage("planejamento")}
+          >
+            Planejamento
+          </button>
+          <button
+            className={page === "assistente" ? "selected" : ""}
+            onClick={() => setPage("assistente")}
+          >
+            Assistente
+          </button>
           <button
             className={page === "estudo" ? "selected" : ""}
             onClick={() => {
@@ -450,6 +472,7 @@ function AppContent() {
           </button>
         </nav>
         <div className="user-nav">
+          <ThemeToggle />
           <span>{user.nome}</span>
           <button
             className="text-button"
@@ -483,16 +506,24 @@ function AppContent() {
               {page === "historico" ? "SEU PERCURSO" : "UM CICLO DE CADA VEZ"}
             </p>
             <h1>
-              {page === "historico"
-                ? "Histórico de estudos"
-                : session && !session.finalizada_em
-                  ? session.materia
-                  : "Hora de encontrar seu ritmo"}
+              {page === "planejamento"
+                ? "Organize os próximos sete dias"
+                : page === "assistente"
+                  ? "Planejar com apoio"
+                  : page === "historico"
+                    ? "Histórico de estudos"
+                    : session && !session.finalizada_em
+                      ? session.materia
+                      : "Hora de encontrar seu ritmo"}
             </h1>
             <p>
-              {page === "historico"
-                ? "Suas sessões, sinais e escolhas de pausa."
-                : "Uma pausa também faz parte do aprendizado."}
+              {page === "planejamento"
+                ? "Tarefas, disponibilidade e agenda em um só lugar."
+                : page === "assistente"
+                  ? "Você revisa e decide o que salvar."
+                  : page === "historico"
+                    ? "Suas sessões, sinais e escolhas de pausa."
+                    : "Uma pausa também faz parte do aprendizado."}
             </p>
           </div>
           <span className="date-label">
@@ -503,6 +534,7 @@ function AppContent() {
           </span>
         </div>
         <Notifications
+          showControls={page === "estudo"}
           userId={user.id}
           session={session}
           offline={offline}
@@ -511,6 +543,26 @@ function AppContent() {
             void reconnect();
           }}
         />
+        {page === "planejamento" && (
+          <Planning
+            key={user.id}
+            onStudy={(subject) => {
+              if (session && !session.finalizada_em) {
+                setNotice(
+                  "Você já tem uma sessão ativa. Encerre-a antes de preparar outro estudo.",
+                );
+              } else {
+                accept(null);
+                setMateria(subject);
+                setNotice(
+                  "Matéria preenchida. Revise e clique em iniciar quando estiver pronto.",
+                );
+              }
+              setPage("estudo");
+            }}
+          />
+        )}
+        {page === "assistente" && <Assistant key={user.id} />}
         {page === "estudo" && !session && (
           <div className="start-layout">
             <section className="intro-panel">
@@ -939,10 +991,5 @@ function AppContent() {
 }
 
 export function App() {
-  return (
-    <>
-      <NotificationPermissionPrompt />
-      <AppContent />
-    </>
-  );
+  return <AppContent />;
 }

@@ -19,7 +19,11 @@ const { resolvePresentationFont, finalizePresentation } = await import(
 );
 const family = resolvePresentationFont({ fontFamily: "Arial" });
 const p = Presentation.create({ slideSize: { width: 1280, height: 720 } });
-const build = path.join(root, ".build", process.argv[2] ? `slides-${path.parse(process.argv[2]).name}` : "slides");
+const build = path.join(
+  root,
+  ".build",
+  process.argv[2] ? `slides-${path.parse(process.argv[2]).name}` : "slides",
+);
 await fs.mkdir(build, { recursive: true });
 await fs.mkdir(path.join(root, "apresentacao"), { recursive: true });
 function text(
@@ -75,10 +79,19 @@ function rows(s, items, start = 200) {
 let s = p.slides.add();
 s.background.fill = "#183F38";
 text(s, "NeuroPlan", 72, 172, 1080, 130, 94, "#F5F5EE", true);
-text(s, "Apoio a pausas durante os estudos", 76, 335, 1070, 75, 42, "#D5E0BD");
 text(
   s,
-  "Protótipo acadêmico · Visão computacional no navegador",
+  "Organização dos estudos e apoio a pausas",
+  76,
+  335,
+  1070,
+  75,
+  42,
+  "#D5E0BD",
+);
+text(
+  s,
+  "Tarefas e planejamento · Visão computacional como diferencial",
   76,
   525,
   1080,
@@ -95,7 +108,7 @@ s = slide(
 );
 text(
   s,
-  "Acompanhar o estudo e oferecer\nespaço para descansar",
+  "Organizar tarefas, planejar o estudo\ne oferecer espaço para pausas",
   72,
   195,
   1080,
@@ -106,7 +119,7 @@ text(
 );
 text(
   s,
-  "Sinais visuais + tempo de estudo + cansaço informado",
+  "Planejamento manual + assistente de IA + câmera opcional",
   72,
   398,
   1120,
@@ -125,19 +138,22 @@ text(
 );
 s = slide(
   "Experiência do estudante",
-  "50 segundos. Percorrer o fluxo. Cadastro e histórico são individuais. Câmera opcional, sem upload de vídeo. Autorizar notificações e estudar em outra aba ou programa com o NeuroPlan aberto. O clique no aviso retorna para revisar a pausa. Computador acordado; navegador pode atrasar avisos. Fonte: https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API/Using_the_Notifications_API",
+  "50 segundos. Mostrar organizador disponível a todas as contas. Criar tarefas, disponibilidade e compromissos. Próximos sete dias, sem recorrência ou calendário externo. Bloco de estudo apenas preenche matéria; iniciar manualmente. Em sessão, autorizar notificações de pausa e estudar em outra aba com NeuroPlan aberto. Câmera opcional, sem upload.",
 );
 rows(s, [
-  ["Preparar", "Entrar, escolher a matéria e informar o cansaço."],
+  ["Organizar", "Cadastrar tarefas, disponibilidade e compromissos."],
+  [
+    "Planejar e revisar",
+    "Montar sete dias manualmente ou revisar uma proposta da IA.",
+  ],
   [
     "Estudar e escolher",
-    "Estudar em outra aba; receber aviso e escolher a pausa.",
+    "Preparar a matéria, iniciar estudo e escolher suas pausas.",
   ],
-  ["Retomar e registrar", "Concluir a pausa, encerrar e consultar o resumo."],
 ]);
 s = slide(
   "Arquitetura do sistema",
-  "60 segundos. Explicar que a inferência ocorre no Web Worker. Somente eventos e autorrelatos seguem para a API; PostgreSQL guarda usuários/sessões/pausas. Produção: Express serve React no Render; banco Neon. Fonte MediaPipe: https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/web_js",
+  "60 segundos. React envia tarefas e horários à API, que autentica e valida. PostgreSQL guarda dados por conta. Groq é chamado somente pelo servidor, com chave privada e contexto escolhido. Sem dados faciais ou cansaço no pedido de IA. Face Landmarker executa localmente no worker; imagens não seguem à API. Produção prevista: Express e React no Render, banco Neon. Demo local usa PGlite. Fontes: https://console.groq.com/docs/structured-outputs e https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/web_js",
 );
 text(s, "Navegador", 72, 216, 300, 60, 38, "#183F38", true);
 text(s, "API", 492, 216, 270, 60, 38, "#183F38", true);
@@ -146,7 +162,7 @@ text(s, "→", 390, 217, 70, 60, 45, "#8D9E77");
 text(s, "→", 800, 217, 70, 60, 45, "#8D9E77");
 text(
   s,
-  "React + MediaPipe\nCâmera e Web Worker\nMétricas EAR / MAR",
+  "React + agenda\nCâmera e Web Worker\nMétricas EAR / MAR",
   72,
   305,
   320,
@@ -155,7 +171,7 @@ text(
 );
 text(
   s,
-  "Express + TypeScript\nAutenticação e validação\nRegras de pausa",
+  "Express + TypeScript\nValidação e autorização\nGroq pelo servidor",
   492,
   305,
   320,
@@ -164,7 +180,7 @@ text(
 );
 text(
   s,
-  "Usuários e sessões\nSinais e autorrelatos\nRecomendações e pausas",
+  "Tarefas e agenda\nConversas e propostas\nSessões e pausas",
   902,
   305,
   305,
@@ -173,7 +189,7 @@ text(
 );
 text(
   s,
-  "As imagens permanecem no navegador.",
+  "Imagens locais. A IA recebe apenas o contexto de planejamento.",
   72,
   568,
   1130,
@@ -183,7 +199,7 @@ text(
 );
 s = slide(
   "Modelo pré-treinado e métricas",
-  "65 segundos. MediaPipe Face Landmarker do Google fornece landmarks. A equipe adapta EAR/MAR do Python e implementa persistência temporal; não treina emoções. Fonte: https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/web_js. Limiares são experimentais, herdados do protótipo inicial.",
+  "65 segundos. MediaPipe pré-treinado fornece pontos; equipe adapta EAR/MAR e persistência temporal do Python. Não treina emoções. Um sinal gera aviso; dois em cinco minutos sugerem pausa de cinco minutos, assim como 25 minutos ou cansaço 4–5. Adiar por cinco minutos, aceitar ou pausa manual. São regras experimentais, sem validação clínica. Fonte: https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/web_js",
 );
 rows(s, [
   [
@@ -200,15 +216,18 @@ rows(s, [
   ],
 ]);
 s = slide(
-  "Regras de recomendação",
-  "65 segundos. Um sinal gera aviso; dois em cinco minutos sugerem pausa. Alternativas: 25 min ou cansaço 4–5. Uma sugestão por vez, cooldown 30 s, um evento por ocorrência/tipo. Adiar suprime sugestões por 5 min; concluir reinicia o ciclo. São regras experimentais, sem validação clínica.",
+  "Assistente: revisão antes de salvar",
+  "65 segundos. IA disponível para todas as contas autenticadas, sem convites. Chave configurada uma única vez pelo dono no servidor. Groq produz JSON; Zod e o servidor verificam horários, conflitos, prazo e sete dias. A equipe desenvolve a integração, não treina o modelo usado pela Groq. Pedidos limitados a cinco por minuto e vinte por dia, timeout trinta segundos. Sem disponibilidade, perguntar; explicar atividades que não couberem. Serviço indisponível mantém organizador manual. Usar Groq Free, sem método de pagamento ou upgrade. Chamada real validada em 6 de outubro de 2026. Termos e privacidade: https://console.groq.com/docs/legal/services-agreement",
 );
 rows(s, [
-  ["Sinais recorrentes", "Dois eventos em 5 minutos do ciclo atual."],
-  ["Tempo ou autorrelato", "25 minutos de estudo contínuo ou cansaço 4–5."],
   [
-    "Pausa de 5 minutos",
-    "Aceitar, adiar por 5 minutos ou iniciar manualmente.",
+    "Entrar e conversar",
+    "Acesso para todas as contas; chave privada no servidor.",
+  ],
+  ["Proposta editável", "Tarefas selecionadas, horários disponíveis e pausas."],
+  [
+    "Confirmação do estudante",
+    "Editar, salvar ou descartar; reenvios não duplicam itens.",
   ],
 ]);
 s = slide(
@@ -219,48 +238,48 @@ rows(s, [
   ["Base inicial", "Detector Python, API Express e schema PostgreSQL."],
   [
     "Integração no navegador",
-    "Worker, interface, contas, sessões e histórico.",
+    "Agenda, tarefas, contas, worker e histórico de estudo.",
   ],
   [
     "Consistência e publicação",
-    "Transações, migrações, testes e configuração Render/Neon.",
+    "Groq, validação, migrações, testes e Render/Neon.",
   ],
 ]);
 s = slide(
   "Verificação e evidências",
-  "55 segundos. Testes automatizados executados: regras temporais, banco/migração legado, auth/isolamento/cookies/origem, eventos únicos e detector sintético. Ver docs/RESULTADOS.md. Avaliação real de webcam/voluntários e publicação ficam pendentes; não inventar acurácia.",
+  "55 segundos. Ver docs/RESULTADOS.md. Testes de auth e isolamento, bloqueio sem login por chamadas diretas, horários, fusos, confirmação idempotente, respostas inválidas, timeout e quota. Chrome headless confirmou fluxo manual e proposta com edição e recarga usando provedor de IA simulado. Chamada real confirmou resposta em português, JSON válido e pergunta por disponibilidade. Publicação e avaliação de utilidade com pessoas continuam pendentes.",
 );
 rows(s, [
   [
     "Regras e detecção",
     "Sequências sintéticas: piscadas, persistência e rosto ausente.",
   ],
-  ["API e banco", "Login, isolamento, eventos únicos, pausas e migrações."],
+  ["API e planejamento", "Login, isolamento, horários, reenvio e quota."],
   [
-    "Avaliação com pessoas",
-    "A realizar: iluminação, óculos, falsos alertas e utilidade.",
+    "Dois fluxos no navegador",
+    "Duas contas sem convites; edição e recarga da proposta.",
   ],
 ]);
 s = slide(
   "Demonstração do protótipo",
-  "90 segundos. Usar dados fictícios. Iniciar com cansaço 2; ativar câmera só com consentimento. Registrar cansaço 4 gera sugestão; adiar; iniciar pausa manual; concluir; encerrar e ver histórico. Esse gatilho é demonstração de regra, não prova de fadiga detectada. Screenshot: aplicativo local real, conta fictícia.",
+  "90 segundos. Criar tarefa, salvar disponibilidade e acrescentar bloco manual. Com a chave da Groq configurada, dividir tarefa, editar cartões e salvar; caso contrário, mostrar teste simulado claramente identificado. Recarregar agenda, preparar matéria e iniciar estudo manualmente. Autorrelato 4 demonstra regra de pausa, não acurácia facial. Screenshot do aplicativo real em Chrome com conta fictícia e proposta simulada no teste.",
 );
 text(
   s,
-  "Iniciar sessão\n\nInformar cansaço\n\nEscolher uma pausa\n\nConsultar histórico",
+  "Cadastrar uma tarefa\n\nDefinir horários\n\nRevisar proposta\n\nSalvar e estudar",
   72,
   208,
   350,
   405,
   31,
 );
-const photo = await fs.readFile(path.join(root, "apresentacao/prototipo.jpg"));
+const photo = await fs.readFile(path.join(root, ".build/planning-agenda.png"));
 s.images.add({
   blob: new Uint8Array(photo),
-  contentType: "image/jpeg",
+  contentType: "image/png",
   position: { left: 452, top: 180, width: 755, height: 485 },
   fit: "contain",
-  alt: "Interface real do NeuroPlan com recomendação de pausa",
+  alt: "Agenda e tarefas reais do NeuroPlan com dados fictícios e resposta de IA simulada no teste",
 });
 s = slide(
   "Limitações e próximos passos",
@@ -268,7 +287,7 @@ s = slide(
 );
 text(
   s,
-  "Fala pode parecer bocejo.\nIluminação e posição alteram as métricas.\nSinais isolados não confirmam fadiga.",
+  "A IA pode errar: revisão é necessária.\nA câmera depende de luz e posição.\nSinais visuais não confirmam fadiga.",
   72,
   210,
   1120,
@@ -277,7 +296,7 @@ text(
 );
 text(
   s,
-  "Próximo passo: avaliar falsos alertas\ne a utilidade das sugestões com voluntários.",
+  "Próximo passo: publicar e avaliar\na utilidade com voluntários.",
   72,
   494,
   1120,
@@ -287,7 +306,11 @@ text(
 );
 const candidate = path.join(build, "candidate.pptx");
 await (await PresentationFile.exportPptx(p)).save(candidate);
-const output = path.join(root, "apresentacao", process.argv[2] ?? "NeuroPlan.pptx");
+const output = path.join(
+  root,
+  "apresentacao",
+  process.argv[2] ?? "NeuroPlan.pptx",
+);
 await finalizePresentation({
   workspaceDir: root,
   candidatePath: candidate,

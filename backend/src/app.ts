@@ -6,6 +6,8 @@ import path from "node:path";
 import { z } from "zod";
 import { Database, HttpError } from "./database";
 import { StudyService } from "./study";
+import { mountPlanning } from "./planning";
+import { AssistantProvider, groqProvider } from "./groq";
 
 const sha = (text: string) => createHash("sha256").update(text).digest("hex");
 const cookieName = "pausa_auth";
@@ -23,6 +25,8 @@ type Options = {
   clock?: () => number;
   loginLimit?: number;
   frontendPath?: string;
+  assistantProvider?: AssistantProvider | null;
+  assistantTimeoutMs?: number;
 };
 export function createApp(db: Database, options: Options = {}) {
   const app = express();
@@ -43,7 +47,7 @@ export function createApp(db: Database, options: Options = {}) {
       );
     next();
   });
-  app.use(express.json({ limit: "16kb" }));
+  app.use(express.json({ limit: "128kb" }));
   app.use((req, res, next) => {
     if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       if (
@@ -193,11 +197,22 @@ export function createApp(db: Database, options: Options = {}) {
     if (!u) throw new HttpError(401, "Entre na sua conta para continuar.");
     res.locals.user = u;
   };
-  app.use(["/auth/me", "/sessoes", "/alertas"], (req, res, next) => {
-    authenticate(req, res)
-      .then(() => next())
-      .catch(next);
-  });
+  app.use(
+    [
+      "/auth/me",
+      "/sessoes",
+      "/alertas",
+      "/planejamento",
+      "/planejamentos",
+      "/tarefas",
+      "/assistente",
+    ],
+    (req, res, next) => {
+      authenticate(req, res)
+        .then(() => next())
+        .catch(next);
+    },
+  );
   app.get(
     "/auth/me",
     wrap(async (_req, res) => {
@@ -319,9 +334,33 @@ export function createApp(db: Database, options: Options = {}) {
       res.status(result.duplicado ? 200 : 201).json(result);
     }),
   );
-  app.use(["/auth", "/sessoes", "/alertas"], (_req, res) => {
-    res.status(404).json({ erro: "Endpoint não encontrado." });
+  mountPlanning(app, db, {
+    clock,
+    provider:
+      options.assistantProvider !== undefined
+        ? (options.assistantProvider ?? undefined)
+        : process.env.GROQ_API_KEY?.trim()
+          ? groqProvider(
+              process.env.GROQ_API_KEY.trim(),
+              process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-20b",
+            )
+          : undefined,
+    timeoutMs: options.assistantTimeoutMs,
   });
+  app.use(
+    [
+      "/auth",
+      "/sessoes",
+      "/alertas",
+      "/planejamento",
+      "/planejamentos",
+      "/tarefas",
+      "/assistente",
+    ],
+    (_req, res) => {
+      res.status(404).json({ erro: "Endpoint não encontrado." });
+    },
+  );
   const frontend =
     options.frontendPath ?? path.resolve(__dirname, "../../frontend/dist");
   app.use(express.static(frontend));
@@ -333,13 +372,11 @@ export function createApp(db: Database, options: Options = {}) {
   );
   app.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
     if (error instanceof z.ZodError) {
-      res
-        .status(400)
-        .json({
-          erro: error.issues
-            .map((i) => `${i.path.join(".")}: ${i.message}`)
-            .join("; "),
-        });
+      res.status(400).json({
+        erro: error.issues
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join("; "),
+      });
       return;
     }
     if (error instanceof HttpError) {
@@ -347,11 +384,9 @@ export function createApp(db: Database, options: Options = {}) {
       return;
     }
     if (error.code === "23505") {
-      res
-        .status(409)
-        .json({
-          erro: "Registro já existente. Atualize a página ou use outro e-mail.",
-        });
+      res.status(409).json({
+        erro: "Registro já existente. Atualize a página ou use outro e-mail.",
+      });
       return;
     }
     if (error.type === "entity.parse.failed") {
@@ -359,11 +394,9 @@ export function createApp(db: Database, options: Options = {}) {
       return;
     }
     console.error("Falha na API:", error.code ?? error.name);
-    res
-      .status(503)
-      .json({
-        erro: "Não foi possível salvar ou consultar os dados. Tente reconectar.",
-      });
+    res.status(503).json({
+      erro: "Não foi possível salvar ou consultar os dados. Tente reconectar.",
+    });
   });
   return app;
 }

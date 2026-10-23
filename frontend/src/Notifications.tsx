@@ -10,11 +10,13 @@ export function Notifications({
   userId,
   session,
   offline,
+  showControls,
   onReturn,
 }: {
   userId: number | null;
   session: StudySession | null;
   offline: boolean;
+  showControls: boolean;
   onReturn: () => void;
 }) {
   const supported =
@@ -182,7 +184,7 @@ export function Notifications({
     }
   }
 
-  if (userId === null) return null;
+  if (userId === null || !showControls) return null;
   return (
     <section className="surface" aria-label="Notificações de pausa">
       <h2>Avisos durante o estudo</h2>

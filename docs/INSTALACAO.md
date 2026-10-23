@@ -2,6 +2,8 @@
 
 Use Node.js 22 ou superior. Execute os comandos na raiz do projeto.
 
+Tarefas e agenda estão na área **Planejamento**, com banco local e PostgreSQL. O **Assistente** está disponível para todas as contas. O dono configura uma única chave privada da Groq no servidor: siga [o guia de planejamento](PLANEJAMENTO.md). O modo local permite organização manual sem internet após a instalação; a IA exige conexão com a Groq.
+
 ## Demonstração local, sem instalar PostgreSQL
 
 ```powershell
@@ -10,6 +12,10 @@ npm run demo
 ```
 
 Abra http://localhost:3000, crie uma conta e inicie uma sessão. O comando prepara o modelo e compila o aplicativo. O banco usa PGlite (PostgreSQL embarcado), persistido em `.local-db`, ignorada pelo Git. Não exponha este modo na internet. `Ctrl+C` encerra o processo. Não compartilhe a pasta do banco: ela contém registros locais e hashes das senhas.
+
+Após atualizar o código ou alterar `backend/.env`, encerre o servidor com **Ctrl+C**, execute novamente **`npm run demo`** e recarregue o navegador com **Ctrl+Shift+R**. Um processo já aberto continua usando a API antiga, mesmo quando os arquivos da interface são recompilados. Se aparecer “O servidor não retornou os dados esperados”, faça esse reinício. As contas e registros em `.local-db` são preservados.
+
+Se aparecer “Já existe um servidor usando a porta 3000”, a segunda instância foi bloqueada antes de abrir o banco. Use a instância já aberta ou encerre-a no terminal original antes de reiniciar. Não abra duas instâncias nem apague `.local-db` para contornar erros. Em `Aborted()` durante a inicialização, preserve a pasta para diagnóstico e recuperação; esse erro pode indicar dano no banco local.
 
 ## Desenvolvimento com PostgreSQL
 

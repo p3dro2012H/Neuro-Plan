@@ -1,4 +1,42 @@
-# Verificações realizadas em 1 de outubro de 2026
+# Verificações do NeuroPlan
+
+## Recuperação de 6 de outubro de 2026 — inicialização local
+
+- O processo antigo `backend/dist/demo.js` continuava ativo em segundo plano na porta 3000. Foi encerrado especificamente após tentativa de parada; nenhum outro processo Node foi encerrado.
+- A base local não abria mesmo após encerrar a instância. Diagnóstico em cópia confirmou `invalid resource manager ID in checkpoint record` / `could not locate a valid checkpoint record`, indicando WAL/checkpoint danificado.
+- Original preservado em `.build/local-db-original-preservado` e cópia anterior em `.build/local-db-backup-20261006-200148`. Ferramenta aberta de recuperação PG17 revisada e executada somente na cópia de diagnóstico: [fonte](https://github.com/garrytan/gbrain/blob/master/src/core/pglite-resetwal.ts). Não foi aplicada automaticamente ao aplicativo.
+- Após recuperar a cópia, os registros legíveis foram transferidos para uma base nova com as três migrações. Comparação de todos os campos copiados passou: 2 usuários, 8 sessões, 16 eventos, 17 pausas, 19 autorrelatos e 2 registros de autenticação. Sequências ajustadas; constraints verificadas durante a inserção; base limpa fechou e reabriu corretamente. A recuperação de WAL pode perder alterações recentes não recuperáveis; não há evidência suficiente para afirmar completude anterior à falha.
+- Base limpa ativada como `.local-db`, preservando o original. API iniciada com sucesso: `/health` retornou JSON/200; tarefas, preferências e assistente passaram a retornar JSON/401 sem login, em vez de HTML/200.
+- `backend/src/demo.ts` agora reserva a porta antes de abrir o banco. `npm run build -w backend` passou. Tentativa de segunda instância produziu mensagem clara de porta ocupada e saiu sem abrir a base, evitando concorrência entre instâncias locais.
+
+## Correção de 6 de outubro de 2026 — tela branca no planejamento/assistente
+
+- Diagnóstico no servidor local em execução: `/health` retornou JSON, mas `/tarefas`, `/planejamento/preferencias` e `/assistente/status` retornaram HTML com status 200. O processo ainda carregava a API anterior enquanto servia a interface recompilada.
+- O cliente agora rejeita respostas HTML/JSON inválido com mensagem de reinício e reconexão, antes de atualizar os componentes. Proxy do Vite inclui as rotas de planejamento e assistente. Reiniciar `npm run demo` é necessário para carregar as rotas novas; não é necessário apagar a base local.
+- `npm run check`: compilação passou e **23 testes passaram** (13 backend, 10 frontend), incluindo regressão de HTML com HTTP 200.
+- Chrome headless: respostas HTML antigas simuladas nas duas áreas produziram aviso visível, sem tela branca; reconexão/atualização restauraram as telas. Os dois fluxos de organização e assistente também passaram.
+
+## Atualização de 6 de outubro de 2026 — Groq e acesso direto
+
+- `npm run check`: compilação frontend/API passou; **22 testes passaram**, 13 no backend e 9 na interface. Cobertura inclui acesso de qualquer conta, bloqueio sem login em todas as rotas do assistente, isolamento, origem, confirmação idempotente, quotas, timeout, respostas inválidas e preservação de conversa/proposta/tarefas de uma conta existente após reiniciar a API. O adaptador Groq usa JSON Schema estrito e mantém a chave apenas no cabeçalho do servidor.
+- `node scripts/verify-planning-browser.mjs`: duas contas no Chrome headless acessaram o assistente sem convites; organização manual, revisão, edição, confirmação, consulta após recarga e preparação de estudo passaram. Esse teste usa banco em memória e IA simulada, sem alterar a base local.
+- `node scripts/groq-smoke.cjs`: **chamada real à Groq passou**, usando `openai/gpt-oss-20b`. Resposta em português, JSON validado e proposta nula; o assistente pediu disponibilidade e compromissos antes de inventar horários. Nenhum dado real de estudante foi enviado. A chave não foi exibida. Esse teste verifica conectividade e formato, sem comprovar qualidade geral das propostas.
+- Configuração única do dono documentada em `docs/PLANEJAMENTO.md`; variáveis privadas `GROQ_API_KEY` e `GROQ_MODEL`. Não há lista de convites nem alternância de fornecedores. Migração 003 e registros existentes preservados.
+- Slides atualizados: `apresentacao/NeuroPlan-assistente.pptx`, com dez slides e roteiro. Pacote validado e imagens renderizadas inspecionadas. As versões anteriores foram preservadas.
+- `backend/.env` estava rastreado pelo Git: retirado do índice com `git rm --cached`, mantendo o arquivo local. A regra de ignorar `.env` já existe. A alteração deve acompanhar o próximo commit.
+- Pendentes: publicação externa, confirmação do plano Free no painel da equipe e avaliação de utilidade com voluntários. Nenhum upgrade ou método de pagamento foi configurado por estes testes.
+
+Os registros seguintes descrevem versões anteriores e não representam o acesso atual ao assistente.
+
+## Atualização de 6 de outubro de 2026 — planejamento
+
+- `npm run check`: compilação frontend/API passou; **20 testes passaram**, sendo 11 no backend e 9 na interface. A suíte inclui migração 003, tarefas/agenda, autenticação e isolamento, acesso adulto verificado no servidor, deduplicação de pedidos e confirmação, edição/descarte, disponibilidade, conflitos, prazo, horizonte, fuso, tarefas concluídas, doze mensagens de contexto, quota, resposta inválida e timeout. O adaptador Gemini foi verificado com HTTP simulado, incluindo JSON estruturado, chave no cabeçalho e respostas 429/500.
+- Chrome headless: conta demonstrativa sem convite criou tarefas e agenda manual, recarregou, consultou registros, recebeu bloqueio do chatbot pela API e preparou matéria sem iniciar estudo. Conta demonstrativa adulta convidada selecionou tarefa, recebeu proposta, editou título e horário, confirmou, recarregou e consultou agenda. Sem erros JavaScript observados.
+- Os testes de navegador usam PostgreSQL em memória e **provedor de IA simulado**. Não chamam Google, não alteram `.local-db` e não validam a qualidade do Gemini real. Script reproduzível em `scripts/verify-planning-browser.mjs`.
+- Guia de planejamento/piloto, instalação, publicação, API e roteiro atualizados. Os slides desta versão são `apresentacao/NeuroPlan-planejamento.pptx`.
+- Pendente: chave da equipe e convite de adultos reais, projeto Google sem faturamento, teste da resposta real do modelo configurado, publicação externa e avaliação com voluntários. O organizador manual funciona sem configurar Gemini. Nenhuma conta externa ou serviço pago foi criado.
+
+Os registros abaixo documentam verificações das versões anteriores.
 
 ## Compilação e testes
 
